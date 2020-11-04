@@ -1,0 +1,55 @@
+name: Check Work Against Requirements
+
+on: [push, pull_request]
+
+jobs:
+  Test-Resume:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install -y pandoc texlive-base texlive-fonts-recommended ispell
+
+    - name: Build
+      run: |
+        mkdir build
+        pandoc -o build/resume.pdf src/resume.md
+
+    - name: Check Built
+      run: |
+        test -f build/resume.pdf
+
+    - name: Check Spelling
+      run: |
+        ! $(pandoc -t latex src/resume.md | ispell -p ispell_dictionary.txt -t -a | grep -q '^#\|^&')
+
+    - name: Save PDF
+      uses: actions/upload-artifact@v2
+      with:
+        name: resume
+        path: build
+
+  Test-Goals:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install -y ispell
+
+    - name: Check Long Enough
+      run: |
+        test $(wc -m src/goals.txt | cut -d " " -f 1) -ge 2500
+
+    - name: Check Not Too Long
+      run: |
+        test $(wc -m src/goals.txt | cut -d " " -f 1) -le 5000
+
+    - name: Check Spelling
+      run: |
+        ! $(ispell -p ispell_dictionary.txt -a < src/goals.txt | grep -q '^#\|^&')
