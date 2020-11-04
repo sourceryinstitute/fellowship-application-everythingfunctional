@@ -53,3 +53,25 @@ jobs:
     - name: Check Spelling
       run: |
         ! $(ispell -p ispell_dictionary.txt -a < src/goals.txt | grep -q '^#\|^&')
+
+  Test-Interest:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install -y ispell
+
+    - name: Check Long Enough
+      run: |
+        test $(wc -m src/interest.txt | cut -d " " -f 1) -ge 2500
+
+    - name: Check Not Too Long
+      run: |
+        test $(wc -m src/interest.txt | cut -d " " -f 1) -le 5000
+
+    - name: Check Spelling
+      run: |
+        ! $(ispell -p ispell_dictionary.txt -a < src/interest.txt | grep -q '^#\|^&')
